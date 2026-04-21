@@ -1,19 +1,23 @@
+import logging
 from fastapi import FastAPI
 
-# Création de l'application
+# configuration des logs
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI(
     title="DevOps Production App",
     version="1.0.0"
 )
 
-# Endpoint de santé (très important en prod)
 @app.get("/health")
-def health() -> dict[str, str]:
+def health():
+    logger.info("Health endpoint called")
     return {"status": "ok"}
 
-# Endpoint métier simple
 @app.get("/users")
-def get_users() -> dict:
+def get_users():
+    logger.info("Users endpoint called")
     return {
         "users": [
             {"id": 1, "name": "Alice"},
@@ -21,7 +25,7 @@ def get_users() -> dict:
         ]
     }
 
-# Endpoint de version (très utilisé en prod)
 @app.get("/version")
-def version() -> dict[str, str]:
+def version():
+    logger.info("Version endpoint called")
     return {"version": "1.0.0"}
