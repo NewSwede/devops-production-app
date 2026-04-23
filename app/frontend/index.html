@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Production App</title>
+</head>
+<body>
+  <h1>Frontend</h1>
+  <button id="load-health">Load backend health</button>
+  <button id="load-users">Load users</button>
+
+  <pre id="output">No data loaded yet.</pre>
+
+  <script>
+    const output = document.getElementById("output");
+
+    async function fetchData(path) {
+      try {
+        const response = await fetch(path);
+        const data = await response.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        output.textContent = `Error: ${error.message}`;
+      }
+    }
+
+    document.getElementById("load-health").addEventListener("click", () => {
+      fetchData("/api/health");
+    });
+
+    document.getElementById("load-users").addEventListener("click", () => {
+      fetchData("/api/users");
+    });
+  </script>
+</body>
+</html>
