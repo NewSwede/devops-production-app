@@ -6,6 +6,14 @@ services:
     container_name: backend
     ports:
       - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: devdb
+      DB_USER: devuser
+      DB_PASSWORD: devpass
+    depends_on:
+      - db
 
   frontend:
     build: ./app/frontend
@@ -14,3 +22,13 @@ services:
       - "3000:80"
     depends_on:
       - backend
+
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"

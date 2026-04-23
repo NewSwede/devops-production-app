@@ -1,3 +1,17 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
+
+# Docker
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Env
+.env
