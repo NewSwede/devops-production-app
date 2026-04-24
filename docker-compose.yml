@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    build: ./app/backend
+    image: imswede/devops-backend:1.0
     container_name: backend
     ports:
       - "8000:8000"
@@ -16,7 +16,7 @@ services:
       - db
 
   frontend:
-    build: ./app/frontend
+    image: imswede/devops-frontend:1.0
     container_name: frontend
     ports:
       - "3000:80"
