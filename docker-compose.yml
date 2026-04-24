@@ -1,39 +1,21 @@
-version: "3.9"
+backend:
+  image: imswede/devops-backend:${IMAGE_TAG}
+  container_name: backend
+  ports:
+    - "8000:8000"
+  environment:
+    DB_HOST: db
+    DB_PORT: 5432
+    DB_NAME: devdb
+    DB_USER: devuser
+    DB_PASSWORD: devpass
+  depends_on:
+    - db
 
-services:
-  backend:
-    image: imswede/devops-backend:1.0
-    container_name: backend
-    ports:
-      - "8000:8000"
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: devdb
-      DB_USER: devuser
-      DB_PASSWORD: devpass
-    depends_on:
-      - db
-
-  frontend:
-    image: imswede/devops-frontend:1.0
-    container_name: frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-
-  db:
-    image: postgres:15
-    container_name: postgres-db
-    environment:
-      POSTGRES_USER: devuser
-      POSTGRES_PASSWORD: devpass
-      POSTGRES_DB: devdb
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-volumes:
-  postgres-data:
+frontend:
+  image: imswede/devops-frontend:${IMAGE_TAG}
+  container_name: frontend
+  ports:
+    - "3000:80"
+  depends_on:
+    - backend
