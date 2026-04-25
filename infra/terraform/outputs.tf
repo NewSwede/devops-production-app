@@ -3,5 +3,5 @@ output "public_ip" {
 }
 
 output "ssh_command" {
-  value = "ssh -i \"D:/Users/sylva/keys/devops-key.pem\" ubuntu@${aws_instance.app.public_ip}"
+  value = "ssh -i \"${var.ssh_private_key_path}\" ubuntu@${aws_instance.app.public_ip}"
 }

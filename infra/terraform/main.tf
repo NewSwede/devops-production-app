@@ -1,7 +1,7 @@
 data "aws_ami" "ubuntu" {
   most_recent = true
 
-  owners = ["099720109477"] # Canonical = éditeur officiel Ubuntu
+  owners = ["099720109477"] # Canonical official Ubuntu images
 
   filter {
     name   = "name"
@@ -16,28 +16,20 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_security_group" "app_sg" {
   name        = "devops-app-sg"
-  description = "Security group for DevOps app"
+  description = "Security group for DevOps Production App"
 
   ingress {
-    description = "SSH from my IP"
+    description = "SSH from admin IP"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["88.164.7.207/32"]
+    cidr_blocks = [var.admin_cidr_block]
   }
 
   ingress {
-    description = "Frontend"
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Backend"
-    from_port   = 8000
-    to_port     = 8000
+    description = "HTTP public entrypoint"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -51,7 +43,9 @@ resource "aws_security_group" "app_sg" {
   }
 
   tags = {
-    Name = "devops-app-sg"
+    Name        = "devops-app-sg"
+    Environment = "production"
+    Project     = "devops-production-app"
   }
 }
 
@@ -64,11 +58,13 @@ resource "aws_instance" "app" {
   user_data = file("${path.module}/user_data.sh")
 
   tags = {
-    Name = "devops-app-terraform"
+    Name        = "devops-app-terraform"
+    Environment = "production"
+    Project     = "devops-production-app"
   }
 }
 
 resource "aws_key_pair" "devops_key" {
-  key_name   = "devops-key-terraform"
-  public_key = file("D:/Users/sylva/keys/devops-key.pub")
+  key_name   = var.ssh_key_name
+  public_key = file(var.ssh_public_key_path)
 }
