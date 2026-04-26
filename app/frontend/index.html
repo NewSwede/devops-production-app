@@ -166,10 +166,6 @@
       letter-spacing: -0.02em;
     }
 
-    .muted {
-      color: var(--muted);
-    }
-
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -275,40 +271,64 @@
     }
 
     .user-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 14px 16px;
+      display: block;
+      padding: 16px;
       border: 1px solid var(--line);
       border-radius: 16px;
       background: rgba(255, 255, 255, 0.52);
+    }
+
+    .user-header,
+    .user-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .user-header {
+      margin-bottom: 8px;
+    }
+
+    .user-footer {
+      margin-top: 12px;
+      flex-wrap: wrap;
     }
 
     .user-name {
       font-weight: 700;
     }
 
-    .user-meta {
+    .user-meta,
+    .user-description,
+    .hint {
       color: var(--muted);
-      font-size: 0.9rem;
+      line-height: 1.7;
     }
 
-    .pill {
+    .user-description {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .pill,
+    .pill-soft {
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(23, 33, 38, 0.07);
-      color: var(--muted);
       font-size: 0.78rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
 
-    .hint {
-      margin: 0;
+    .pill {
+      background: rgba(23, 33, 38, 0.07);
       color: var(--muted);
-      line-height: 1.7;
+    }
+
+    .pill-soft {
+      background: rgba(196, 99, 45, 0.1);
+      color: var(--accent-dark);
     }
 
     .footer-card {
@@ -362,6 +382,12 @@
 
       h1 {
         max-width: none;
+      }
+
+      .user-header,
+      .user-footer {
+        align-items: flex-start;
+        flex-direction: column;
       }
     }
   </style>
@@ -442,11 +468,13 @@
           </div>
           <ul id="user-list" class="list">
             <li class="user-row">
-              <div>
-                <div class="user-name">No data yet</div>
-                <div class="user-meta">Load the user list to populate this panel.</div>
+              <div class="user-header">
+                <div>
+                  <div class="user-name">No data yet</div>
+                  <div class="user-meta">Load the user list to populate this panel.</div>
+                </div>
+                <span class="pill">idle</span>
               </div>
-              <span class="pill">idle</span>
             </li>
           </ul>
         </div>
@@ -501,6 +529,15 @@
       output.textContent = content;
     }
 
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
     function renderUsers(payload) {
       const users = Array.isArray(payload.users) ? payload.users : [];
       userCount.textContent = `${users.length} loaded`;
@@ -508,11 +545,13 @@
       if (!users.length) {
         userList.innerHTML = `
           <li class="user-row">
-            <div>
-              <div class="user-name">No users returned</div>
-              <div class="user-meta">The API answered, but the list is empty.</div>
+            <div class="user-header">
+              <div>
+                <div class="user-name">No users returned</div>
+                <div class="user-meta">The API answered, but the list is empty.</div>
+              </div>
+              <span class="pill">empty</span>
             </div>
-            <span class="pill">empty</span>
           </li>
         `;
         return;
@@ -521,11 +560,18 @@
       userList.innerHTML = users
         .map((user) => `
           <li class="user-row">
-            <div>
-              <div class="user-name">${user.name}</div>
-              <div class="user-meta">User #${user.id}</div>
+            <div class="user-header">
+              <div>
+                <div class="user-name">${escapeHtml(user.name)}</div>
+                <div class="user-meta">${escapeHtml(user.role)} · ${escapeHtml(user.team)}</div>
+              </div>
+              <span class="pill">${user.is_active ? "active" : "inactive"}</span>
             </div>
-            <span class="pill">active</span>
+            <p class="user-description">${escapeHtml(user.description)}</p>
+            <div class="user-footer">
+              <span class="pill-soft">${escapeHtml(user.email)}</span>
+              <span class="user-meta">User #${escapeHtml(user.id)}</span>
+            </div>
           </li>
         `)
         .join("");

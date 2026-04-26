@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -9,14 +8,14 @@ import psycopg
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from psycopg.rows import dict_row
 
 
 class Settings(BaseSettings):
     app_name: str = "DevOps Production App"
-    app_version: str = "1.1.0"
+    app_version: str = "1.2.0"
     app_env: str = "development"
     log_level: str = "INFO"
     db_host: str = "localhost"
@@ -55,6 +54,12 @@ class HealthResponse(BaseModel):
 class User(BaseModel):
     id: int
     name: str = Field(min_length=1, max_length=100)
+    email: EmailStr
+    role: str = Field(min_length=1, max_length=100)
+    team: str = Field(min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=300)
+    is_active: bool
+    created_at: datetime
 
 
 class UsersResponse(BaseModel):
@@ -109,18 +114,52 @@ def check_database() -> bool:
         return False
 
 
+def ensure_user_schema(cur: psycopg.Cursor) -> None:
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL
+        )
+        """
+    )
+
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255)")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(100)")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS team VARCHAR(100)")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS description VARCHAR(300)")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN")
+    cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ")
+
+    cur.execute(
+        """
+        UPDATE users
+        SET
+            email = COALESCE(email, LOWER(REPLACE(name, ' ', '.')) || '@example.com'),
+            role = COALESCE(role, 'platform-engineer'),
+            team = COALESCE(team, 'platform'),
+            description = COALESCE(
+                description,
+                'Contributes to the platform team and supports production operations.'
+            ),
+            is_active = COALESCE(is_active, TRUE),
+            created_at = COALESCE(created_at, NOW())
+        """
+    )
+
+    cur.execute("ALTER TABLE users ALTER COLUMN email SET NOT NULL")
+    cur.execute("ALTER TABLE users ALTER COLUMN role SET NOT NULL")
+    cur.execute("ALTER TABLE users ALTER COLUMN team SET NOT NULL")
+    cur.execute("ALTER TABLE users ALTER COLUMN description SET NOT NULL")
+    cur.execute("ALTER TABLE users ALTER COLUMN is_active SET NOT NULL")
+    cur.execute("ALTER TABLE users ALTER COLUMN created_at SET NOT NULL")
+
+
 def init_db() -> None:
     logger.info("Initializing database schema")
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS users (
-                    id SERIAL PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL
-                )
-                """
-            )
+            ensure_user_schema(cur)
 
             cur.execute("SELECT COUNT(*) AS total FROM users")
             count_row = cur.fetchone()
@@ -130,11 +169,43 @@ def init_db() -> None:
                 logger.info("Seeding initial users")
                 cur.execute(
                     """
-                    INSERT INTO users (name)
+                    INSERT INTO users (
+                        name,
+                        email,
+                        role,
+                        team,
+                        description,
+                        is_active,
+                        created_at
+                    )
                     VALUES
-                        ('Alice'),
-                        ('Bob'),
-                        ('Charlie')
+                        (
+                            'Alice Johnson',
+                            'alice.johnson@example.com',
+                            'Platform Engineer',
+                            'Platform',
+                            'Builds internal deployment tooling and improves application reliability in production.',
+                            TRUE,
+                            NOW()
+                        ),
+                        (
+                            'Bob Martin',
+                            'bob.martin@example.com',
+                            'Site Reliability Engineer',
+                            'Operations',
+                            'Maintains observability, incident response workflows, and runtime stability.',
+                            TRUE,
+                            NOW()
+                        ),
+                        (
+                            'Charlie Dupont',
+                            'charlie.dupont@example.com',
+                            'DevOps Manager',
+                            'Engineering',
+                            'Coordinates platform delivery, production standards, and cross-team infrastructure priorities.',
+                            TRUE,
+                            NOW()
+                        )
                     """
                 )
 
@@ -230,7 +301,21 @@ def health() -> HealthResponse:
 @app.get("/users", response_model=UsersResponse, tags=["users"])
 def get_users() -> UsersResponse:
     with db_cursor() as cur:
-        cur.execute("SELECT id, name FROM users ORDER BY id")
+        cur.execute(
+            """
+            SELECT
+                id,
+                name,
+                email,
+                role,
+                team,
+                description,
+                is_active,
+                created_at
+            FROM users
+            ORDER BY id
+            """
+        )
         rows = cur.fetchall()
 
     users = [User.model_validate(row) for row in rows]
@@ -240,7 +325,22 @@ def get_users() -> UsersResponse:
 @app.get("/users/{user_id}", response_model=User, tags=["users"])
 def get_user(user_id: int) -> User:
     with db_cursor() as cur:
-        cur.execute("SELECT id, name FROM users WHERE id = %s", (user_id,))
+        cur.execute(
+            """
+            SELECT
+                id,
+                name,
+                email,
+                role,
+                team,
+                description,
+                is_active,
+                created_at
+            FROM users
+            WHERE id = %s
+            """,
+            (user_id,),
+        )
         row = cur.fetchone()
 
     if row is None:
