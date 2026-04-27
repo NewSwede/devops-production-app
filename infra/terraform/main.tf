@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -14,9 +27,13 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+locals {
+  resolved_ssh_public_key = var.ssh_public_key != "" ? var.ssh_public_key : try(file(pathexpand(var.ssh_public_key_path)), "")
+}
+
 resource "aws_security_group" "app_sg" {
   name        = "devops-app-sg"
-  description = "Security group for DevOps Production App"
+  description = "Security group for DevOps app"
 
   ingress {
     description = "SSH from admin IP"
@@ -66,5 +83,12 @@ resource "aws_instance" "app" {
 
 resource "aws_key_pair" "devops_key" {
   key_name   = var.ssh_key_name
-  public_key = file(var.ssh_public_key_path)
+  public_key = local.resolved_ssh_public_key
+
+  lifecycle {
+    precondition {
+      condition     = local.resolved_ssh_public_key != ""
+      error_message = "Set either ssh_public_key with the public key content or ssh_public_key_path with a valid local public key path."
+    }
+  }
 }
