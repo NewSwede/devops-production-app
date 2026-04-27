@@ -30,6 +30,10 @@ jobs:
       - name: Push frontend image
         run: docker push imswede/devops-frontend:${IMAGE_TAG}
 
+      - name: Show GitHub runner public IP
+        run: curl -s https://checkip.amazonaws.com
+    
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
