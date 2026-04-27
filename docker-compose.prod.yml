@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  backend:
+    image: imswede/devops-backend:${IMAGE_TAG}
+    container_name: backend
+    environment:
+      DEVOPS_APP_APP_ENV: production
+      DEVOPS_APP_LOG_LEVEL: INFO
+      DEVOPS_APP_DB_HOST: db
+      DEVOPS_APP_DB_PORT: 5432
+      DEVOPS_APP_DB_NAME: devdb
+      DEVOPS_APP_DB_USER: devuser
+      DEVOPS_APP_DB_PASSWORD: devpass
+    depends_on:
+      - db
+
+  frontend:
+    image: imswede/devops-frontend:${IMAGE_TAG}
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: devdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

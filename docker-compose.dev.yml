@@ -5,13 +5,13 @@ services:
     build: ./app/backend
     container_name: backend
     environment:
-      - DEVOPS_APP_APP_ENV=production
-      - DEVOPS_APP_LOG_LEVEL=INFO
-      - DEVOPS_APP_DB_HOST=db
-      - DEVOPS_APP_DB_PORT=5432
-      - DEVOPS_APP_DB_NAME=devdb
-      - DEVOPS_APP_DB_USER=devuser
-      - DEVOPS_APP_DB_PASSWORD=devpass
+      DEVOPS_APP_APP_ENV: development
+      DEVOPS_APP_LOG_LEVEL: INFO
+      DEVOPS_APP_DB_HOST: db
+      DEVOPS_APP_DB_PORT: 5432
+      DEVOPS_APP_DB_NAME: devdb
+      DEVOPS_APP_DB_USER: devuser
+      DEVOPS_APP_DB_PASSWORD: devpass
     depends_on:
       - db
 
