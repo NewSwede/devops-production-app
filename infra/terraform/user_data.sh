@@ -13,15 +13,17 @@ usermod -aG docker ubuntu
 cd /home/ubuntu
 
 if [ ! -d "devops-production-app" ]; then
-  git clone https://github.com/NewSwede/devops-production-app.git
+  sudo -u ubuntu git clone https://github.com/NewSwede/devops-production-app.git
 fi
 
 cd /home/ubuntu/devops-production-app
+chown -R ubuntu:ubuntu /home/ubuntu/devops-production-app
 
 if [ ! -f ".env" ]; then
   cat <<'EOF' > .env
 IMAGE_TAG=bootstrap
 EOF
+  chown ubuntu:ubuntu .env
 fi
 
 docker-compose down || true
