@@ -39,7 +39,7 @@ jobs:
           envs: IMAGE_TAG
           script: |
             cd ~/devops-production-app
-            git pull --ff-only origin main
+            git pull 
             echo "IMAGE_TAG=$IMAGE_TAG" > .env
             docker-compose -f docker-compose.prod.yml pull
             docker-compose -f docker-compose.prod.yml up -d --remove-orphans
