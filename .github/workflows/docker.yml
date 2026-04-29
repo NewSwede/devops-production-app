@@ -20,6 +20,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install backend test dependencies
+        run: pip install -r app/backend/requirements-dev.txt
+
+      - name: Run backend tests
+        working-directory: app/backend
+        run: pytest
+
+      - name: Validate compose files
+        env:
+          IMAGE_TAG: ci
+        run: |
+          docker compose -f docker-compose.dev.yml config
+          docker compose -f docker-compose.prod.yml config
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

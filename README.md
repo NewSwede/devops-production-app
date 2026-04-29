@@ -196,6 +196,17 @@ Apres l'application, Terraform affiche l'adresse IP publique et une commande SSH
 
 Les commandes de diagnostic sont regroupees dans [docs/runbook.md](docs/runbook.md).
 
+## Integration continue
+
+Le workflow GitHub Actions `CI` verifie automatiquement les changements avec:
+
+- tests backend `pytest`;
+- validation Terraform `fmt`, `init -backend=false`, `validate`;
+- validation des fichiers Docker Compose;
+- build des images Docker backend et frontend.
+
+Le workflow de deploiement relance aussi les tests backend et la validation Compose avant de publier les images et de mettre a jour l'EC2.
+
 Commandes utiles:
 
 ```bash
