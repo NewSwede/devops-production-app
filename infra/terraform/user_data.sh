@@ -5,7 +5,13 @@ exec > >(tee /var/log/devops-app-bootstrap.log) 2>&1
 
 apt update -y
 apt upgrade -y
-apt install -y docker.io docker-compose git
+apt install -y curl docker.io git
+
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -fsSL \
+  https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 systemctl enable --now docker
 usermod -aG docker ubuntu
@@ -30,5 +36,5 @@ EOF
   chmod 600 .env
 fi
 
-docker-compose -f docker-compose.dev.yml down || true
-docker-compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml down || true
+docker compose -f docker-compose.dev.yml up -d --build

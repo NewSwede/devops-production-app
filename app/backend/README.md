@@ -41,7 +41,7 @@ password: devpass
 Pour lancer uniquement PostgreSQL depuis la racine du depot:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d db
+docker compose -f docker-compose.dev.yml up -d db
 ```
 
 ## Variables utiles
@@ -61,5 +61,5 @@ docker-compose -f docker-compose.dev.yml up -d db
 Depuis la racine du depot:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d --build backend db
+docker compose -f docker-compose.dev.yml up -d --build backend db
 ```

@@ -84,13 +84,13 @@ Prerequis:
 Depuis la racine du projet:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
 Verifier les services:
 
 ```bash
-docker-compose -f docker-compose.dev.yml ps
+docker compose -f docker-compose.dev.yml ps
 curl http://localhost/
 curl http://localhost/api/health
 curl http://localhost/api/users
@@ -99,13 +99,13 @@ curl http://localhost/api/users
 Arreter la stack:
 
 ```bash
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml down
 ```
 
 Supprimer aussi les donnees PostgreSQL locales:
 
 ```bash
-docker-compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml down -v
 ```
 
 ## API backend
@@ -166,7 +166,7 @@ uvicorn app.main:app --reload
 Pour utiliser PostgreSQL via Docker tout en lancant le backend localement, demarrer uniquement la base:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d db
+docker compose -f docker-compose.dev.yml up -d db
 ```
 
 Puis configurer le backend pour joindre `localhost:5432`.
@@ -199,11 +199,11 @@ Les commandes de diagnostic sont regroupees dans [docs/runbook.md](docs/runbook.
 Commandes utiles:
 
 ```bash
-docker-compose -f docker-compose.prod.yml ps
-docker-compose -f docker-compose.prod.yml logs -f backend
-docker-compose -f docker-compose.prod.yml logs -f frontend
-docker-compose -f docker-compose.prod.yml logs -f db
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f backend
+docker compose -f docker-compose.prod.yml logs -f frontend
+docker compose -f docker-compose.prod.yml logs -f db
+docker compose -f docker-compose.prod.yml restart
 ```
 
 Pour diagnostiquer proprement, suivre les couches dans cet ordre:
