@@ -9,7 +9,7 @@ Ce document permet de diagnostiquer rapidement un probleme en production.
 # 1. Verifier l'etat des conteneurs
 
 ```bash
-docker-compose ps
+docker-compose -f docker-compose.prod.yml ps
 ```
 
 ### Interpretation
@@ -23,15 +23,15 @@ docker-compose ps
 # 2. Lire les logs
 
 ```bash
-docker-compose logs frontend
-docker-compose logs backend
-docker-compose logs db
+docker-compose -f docker-compose.prod.yml logs frontend
+docker-compose -f docker-compose.prod.yml logs backend
+docker-compose -f docker-compose.prod.yml logs db
 ```
 
 ### En temps reel
 
 ```bash
-docker-compose logs -f backend
+docker-compose -f docker-compose.prod.yml logs -f backend
 ```
 
 ---
@@ -70,9 +70,9 @@ sudo ss -tulpn
 ## Cas 1 - Backend en `Exit(1)`
 
 ```bash
-docker-compose logs backend
-docker-compose logs db
-docker-compose config
+docker-compose -f docker-compose.prod.yml logs backend
+docker-compose -f docker-compose.prod.yml logs db
+docker-compose -f docker-compose.prod.yml config
 ```
 
 ### Causes possibles
@@ -88,8 +88,8 @@ docker-compose config
 ## Cas 2 - Frontend accessible mais API en erreur
 
 ```bash
-docker-compose logs frontend
-docker-compose logs backend
+docker-compose -f docker-compose.prod.yml logs frontend
+docker-compose -f docker-compose.prod.yml logs backend
 docker exec -it frontend sh
 wget -qO- http://backend:8000/health
 ```
@@ -118,8 +118,8 @@ wget -qO- http://backend:8000/health
 ## Cas 4 - Probleme base de donnees
 
 ```bash
-docker-compose logs db
-docker-compose logs backend
+docker-compose -f docker-compose.prod.yml logs db
+docker-compose -f docker-compose.prod.yml logs backend
 ```
 
 ### Causes possibles
@@ -134,11 +134,11 @@ docker-compose logs backend
 # 6. Commandes utiles
 
 ```bash
-docker-compose down
-docker-compose up -d --build
-docker-compose restart
-docker-compose logs -f frontend
-docker-compose logs -f backend
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.prod.yml restart
+docker-compose -f docker-compose.prod.yml logs -f frontend
+docker-compose -f docker-compose.prod.yml logs -f backend
 ```
 
 ---

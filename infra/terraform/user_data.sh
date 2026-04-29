@@ -21,10 +21,14 @@ chown -R ubuntu:ubuntu /home/ubuntu/devops-production-app
 
 if [ ! -f ".env" ]; then
   cat <<'EOF' > .env
-IMAGE_TAG=bootstrap
+IMAGE_TAG=local
+POSTGRES_DB=devdb
+POSTGRES_USER=devuser
+POSTGRES_PASSWORD=devpass
 EOF
   chown ubuntu:ubuntu .env
+  chmod 600 .env
 fi
 
-docker-compose down || true
-docker-compose up -d --build
+docker-compose -f docker-compose.dev.yml down || true
+docker-compose -f docker-compose.dev.yml up -d --build

@@ -7,7 +7,11 @@ variable "aws_region" {
 variable "admin_cidr_block" {
   description = "CIDR block allowed to access the instance over SSH."
   type        = string
-  default     = "0.0.0.0/0"
+
+  validation {
+    condition     = can(cidrhost(var.admin_cidr_block, 0)) && var.admin_cidr_block != "0.0.0.0/0"
+    error_message = "admin_cidr_block must be a valid CIDR block and must not be 0.0.0.0/0."
+  }
 }
 
 variable "ssh_key_name" {

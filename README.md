@@ -60,7 +60,8 @@ Seul le port `80` est expose publiquement. Le backend et la base de donnees rest
 |   `-- runbook.md               # diagnostic production
 |-- infra/
 |   `-- terraform/               # provisionnement AWS EC2
-`-- docker-compose.yml           # stack locale et production simple VM
+|-- docker-compose.dev.yml       # stack locale avec build des images
+`-- docker-compose.prod.yml      # stack production avec images publiees
 ```
 
 ## Stack technique
@@ -83,13 +84,13 @@ Prerequis:
 Depuis la racine du projet:
 
 ```bash
-docker-compose up -d --build
+docker-compose -f docker-compose.dev.yml up -d --build
 ```
 
 Verifier les services:
 
 ```bash
-docker-compose ps
+docker-compose -f docker-compose.dev.yml ps
 curl http://localhost/
 curl http://localhost/api/health
 curl http://localhost/api/users
@@ -98,13 +99,13 @@ curl http://localhost/api/users
 Arreter la stack:
 
 ```bash
-docker-compose down
+docker-compose -f docker-compose.dev.yml down
 ```
 
 Supprimer aussi les donnees PostgreSQL locales:
 
 ```bash
-docker-compose down -v
+docker-compose -f docker-compose.dev.yml down -v
 ```
 
 ## API backend
@@ -141,7 +142,15 @@ Le backend lit sa configuration via des variables d'environnement prefixees par 
 | `DEVOPS_APP_DB_INIT_RETRIES` | `10` | Nombre d'essais d'initialisation DB |
 | `DEVOPS_APP_DB_INIT_RETRY_DELAY_SECONDS` | `3` | Delai entre les essais |
 
-Dans `docker-compose.yml`, ces variables sont deja renseignees pour faire communiquer le backend avec le service `db`.
+Dans `docker-compose.dev.yml` et `docker-compose.prod.yml`, ces variables sont deja renseignees pour faire communiquer le backend avec le service `db`. Elles peuvent etre surchargees via un fichier `.env`.
+
+En production, le workflow GitHub Actions ecrit le fichier `.env` sur la VM avant de lancer `docker-compose.prod.yml`. Pour eviter les credentials de demonstration, definir ces secrets GitHub:
+
+| Secret | Role |
+| --- | --- |
+| `PROD_POSTGRES_DB` | Nom de la base PostgreSQL |
+| `PROD_POSTGRES_USER` | Utilisateur PostgreSQL |
+| `PROD_POSTGRES_PASSWORD` | Mot de passe PostgreSQL |
 
 ## Developpement backend sans Docker
 
@@ -157,7 +166,7 @@ uvicorn app.main:app --reload
 Pour utiliser PostgreSQL via Docker tout en lancant le backend localement, demarrer uniquement la base:
 
 ```bash
-docker-compose up -d db
+docker-compose -f docker-compose.dev.yml up -d db
 ```
 
 Puis configurer le backend pour joindre `localhost:5432`.
@@ -190,11 +199,11 @@ Les commandes de diagnostic sont regroupees dans [docs/runbook.md](docs/runbook.
 Commandes utiles:
 
 ```bash
-docker-compose ps
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f db
-docker-compose restart
+docker-compose -f docker-compose.prod.yml ps
+docker-compose -f docker-compose.prod.yml logs -f backend
+docker-compose -f docker-compose.prod.yml logs -f frontend
+docker-compose -f docker-compose.prod.yml logs -f db
+docker-compose -f docker-compose.prod.yml restart
 ```
 
 Pour diagnostiquer proprement, suivre les couches dans cet ordre:

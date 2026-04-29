@@ -9,11 +9,17 @@ services:
       DEVOPS_APP_LOG_LEVEL: INFO
       DEVOPS_APP_DB_HOST: db
       DEVOPS_APP_DB_PORT: 5432
-      DEVOPS_APP_DB_NAME: devdb
-      DEVOPS_APP_DB_USER: devuser
-      DEVOPS_APP_DB_PASSWORD: devpass
+      DEVOPS_APP_DB_NAME: ${POSTGRES_DB:-devdb}
+      DEVOPS_APP_DB_USER: ${POSTGRES_USER:-devuser}
+      DEVOPS_APP_DB_PASSWORD: ${POSTGRES_PASSWORD:-devpass}
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   frontend:
     build: ./app/frontend
@@ -22,16 +28,28 @@ services:
       - "80:80"
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   db:
     image: postgres:15
     container_name: postgres-db
     environment:
-      POSTGRES_USER: devuser
-      POSTGRES_PASSWORD: devpass
-      POSTGRES_DB: devdb
+      POSTGRES_USER: ${POSTGRES_USER:-devuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpass}
+      POSTGRES_DB: ${POSTGRES_DB:-devdb}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   postgres-data:
