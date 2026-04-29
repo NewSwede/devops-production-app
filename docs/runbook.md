@@ -90,7 +90,7 @@ docker compose -f docker-compose.prod.yml config
 ```bash
 docker compose -f docker-compose.prod.yml logs frontend
 docker compose -f docker-compose.prod.yml logs backend
-docker exec -it frontend sh
+docker compose -f docker-compose.prod.yml exec frontend sh
 wget -qO- http://backend:8000/health
 ```
 

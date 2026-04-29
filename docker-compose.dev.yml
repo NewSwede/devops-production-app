@@ -1,9 +1,6 @@
-version: "3.9"
-
 services:
   backend:
     build: ./app/backend
-    container_name: backend
     environment:
       DEVOPS_APP_APP_ENV: development
       DEVOPS_APP_LOG_LEVEL: INFO
@@ -23,7 +20,6 @@ services:
 
   frontend:
     build: ./app/frontend
-    container_name: frontend
     ports:
       - "80:80"
     depends_on:
@@ -37,7 +33,6 @@ services:
 
   db:
     image: postgres:15
-    container_name: postgres-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-devuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpass}

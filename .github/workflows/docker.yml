@@ -133,6 +133,10 @@ jobs:
 
             docker compose version
             docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml down --remove-orphans || true
+            for container_name in backend frontend postgres-db; do
+              docker ps -aq --filter "name=${container_name}" | xargs -r docker rm -f
+            done
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
       - name: Healthcheck
